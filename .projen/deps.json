@@ -22,12 +22,12 @@
     },
     {
       "name": "aws-cdk-lib",
-      "version": "2.1.0",
+      "version": "2.43.1",
       "type": "build"
     },
     {
       "name": "constructs",
-      "version": "10.0.5",
+      "version": "10.1.121",
       "type": "build"
     },
     {
@@ -101,28 +101,27 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/client-rds",
+      "type": "bundled"
+    },
+    {
+      "name": "@types/babel__traverse",
+      "version": "7.18.2",
+      "type": "override"
+    },
+    {
       "name": "@types/prettier",
       "version": "2.6.0",
       "type": "override"
     },
     {
-      "name": "@types/responselike",
-      "version": "1.0.0",
-      "type": "override"
-    },
-    {
-      "name": "got",
-      "version": "12.3.1",
-      "type": "override"
-    },
-    {
       "name": "aws-cdk-lib",
-      "version": "^2.1.0",
+      "version": "^2.43.1",
       "type": "peer"
     },
     {
       "name": "constructs",
-      "version": "^10.0.5",
+      "version": "^10.1.121",
       "type": "peer"
     }
   ],
