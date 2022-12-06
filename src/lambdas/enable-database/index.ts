@@ -29,7 +29,7 @@ export async function handler() {
 
     await Promise.allSettled<any>(databaseInstancesResponse.map(async (instance) => {
       // If the instance is already available then this is probably a retry.
-      if (instance.DBInstanceStatus === 'Available') {
+      if (instance.DBInstanceStatus === 'available') {
         return;
       }
       await waitForDatabase(instance.DBInstanceIdentifier!);
