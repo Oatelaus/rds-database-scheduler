@@ -4,7 +4,7 @@ Provides an easy way to schedule your RDS clusters to go up and down.
 
 ## Example
 
-```
+```ts
 new RdsDatabaseScheduler(this, 'database-scheduler', {
     clusterIdentifier: `db-oatelaus`,
     enableCron: {
