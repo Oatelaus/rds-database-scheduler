@@ -11,7 +11,7 @@ export async function handler() {
   const cluster = await getCluster(CLUSTER_IDENTIFIER);
 
   // This block handles the possible retry logic from timeout for when RDS takes too long and WEBHOOK_STATUS is set.
-  if (cluster?.Status === 'Stopped') {
+  if (cluster?.Status === 'stopped') {
     // Request the cluster be started.
     await startCluster(CLUSTER_IDENTIFIER);
 
@@ -19,7 +19,7 @@ export async function handler() {
       cluster: CLUSTER_IDENTIFIER,
       message: `Starting cluster ${CLUSTER_IDENTIFIER}`,
     });
-  } else if (cluster?.Status !== 'Starting') {
+  } else if (cluster?.Status !== 'starting') {
     throw new Error('Cluster is not in an actionable state.');
   }
 

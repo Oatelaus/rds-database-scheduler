@@ -1,1 +1,1 @@
-export * from './rds-scheduled-rules';
+export * from './rds-database-scheduler';

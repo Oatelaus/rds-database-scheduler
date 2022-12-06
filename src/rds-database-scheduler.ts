@@ -103,6 +103,7 @@ export class RdsDatabaseScheduler extends Construct {
         new PolicyStatement({
           actions: [
             'rds:DescribeDBInstances',
+            'rds:DescribeDBClusters',
           ],
           resources: [
             '*',
@@ -130,6 +131,7 @@ export class RdsDatabaseScheduler extends Construct {
         new PolicyStatement({
           actions: [
             'rds:DescribeDBInstances',
+            'rds:DescribeDBClusters',
           ],
           resources: [
             '*',
