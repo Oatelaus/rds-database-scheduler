@@ -17,9 +17,13 @@ export interface IWebhookOptions {
 }
 
 export interface IRdsDatabaseSchedulerProps {
+  /** Identifier from AWS that represents the cluster to be controlled. */
   clusterIdentifier: string;
+  /** CronOptions that represent when the database will be brought up. */
   enableCron?: CronOptions;
+  /** CronOptions that represent when the database will be terminated. */
   terminateCron?: CronOptions;
+  /** A collection of webhooks that report status on database actions. */
   webhooks?: IWebhookOptions;
 }
 
