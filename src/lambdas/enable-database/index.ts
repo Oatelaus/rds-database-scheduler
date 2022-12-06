@@ -28,6 +28,10 @@ export async function handler() {
     const databaseInstancesResponse = await getDbInstances(CLUSTER_IDENTIFIER!);
 
     await Promise.allSettled<any>(databaseInstancesResponse.map(async (instance) => {
+      // If the instance is already available then this is probably a retry.
+      if (instance.DBInstanceStatus === 'Available') {
+        return;
+      }
       await waitForDatabase(instance.DBInstanceIdentifier!);
       await post(WEBHOOK_START_STATUS, {
         cluster: CLUSTER_IDENTIFIER,
