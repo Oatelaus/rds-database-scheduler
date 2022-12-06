@@ -29,8 +29,8 @@
     "projen": "npx projen"
   },
   "author": {
-    "name": "Nathan Dawson",
-    "email": "nathanjdawson@gmail.com",
+    "name": "oatelaus",
+    "email": "oatelaus@gmail.com",
     "organization": false
   },
   "devDependencies": {
