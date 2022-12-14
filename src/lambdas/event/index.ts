@@ -8,13 +8,13 @@ export interface RDSEventMessage {
   'Event Source': 'db-instance';
   'Event Time': string;
   'Identifier Link': string;
-  'Source ID': string; // "db-nathan-2",
-  'Source ARN': string; // "arn:aws:rds:eu-west-2:303062881782:db:db-nathan-2",
-  'Event ID': string; // "http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Events.Messages.html#RDS-EVENT-0006",
-  'Event Message': string; //"DB instance restarted"
+  'Source ID': string;
+  'Source ARN': string;
+  'Event ID': string;
+  'Event Message': string;
 }
 
-const DATA_RECOVER_EVENT = '0088';
+const DATABASE_INSTANCE_START_EVENT = '0088';
 
 export async function handler(event: SNSEvent) {
   const primaryRecord = event.Records[0]!;
@@ -23,7 +23,7 @@ export async function handler(event: SNSEvent) {
 
   const eventId = rdsEventMessage['Event ID'].split('#RDS-EVENT-')[1];
 
-  if (eventId !== DATA_RECOVER_EVENT) {
+  if (eventId !== DATABASE_INSTANCE_START_EVENT) {
     return;
   }
 
