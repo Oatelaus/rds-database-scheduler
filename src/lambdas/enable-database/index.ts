@@ -1,5 +1,5 @@
-import { startCluster } from '../../services/rds';
 import { post } from '../../services/http';
+import { startCluster } from '../../services/rds';
 
 const { CLUSTER_IDENTIFIER, WEBHOOK } = process.env;
 
