@@ -1,6 +1,6 @@
 import { SNSEvent } from 'aws-lambda';
-import { waitForDatabase } from '../../database';
-import { post } from '../../http';
+import { waitForDatabase } from '../../services/rds';
+import { post } from '../../services/http';
 
 const { WEBHOOK, CLUSTER_IDENTIFIER } = process.env;
 
