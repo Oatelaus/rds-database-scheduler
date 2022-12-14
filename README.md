@@ -21,10 +21,6 @@ new RdsDatabaseScheduler(this, 'database-scheduler', {
         month: '*',
         year: '*'
     },
-    webhooks: {
-        start: 'https://hooks.slack.com/workflows/webhook-url',
-        status: 'https://hooks.slack.com/workflows/webhook-url',
-        terminate: 'https://hooks.slack.com/workflows/webhook-url'
-    }
+    webhook: 'https://hooks.slack.com/workflows/webhook-url'
 })
 ```

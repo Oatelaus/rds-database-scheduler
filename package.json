@@ -1,5 +1,5 @@
 {
-  "name": "rds-database-scheduler",
+  "name": "@oatelaus/rds-database-scheduler",
   "repository": {
     "type": "git",
     "url": "https://github.com/Oatelaus/rds-database-scheduler.git"
