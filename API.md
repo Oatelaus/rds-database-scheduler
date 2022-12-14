@@ -6,7 +6,7 @@
 
 Provides an easy way to schedule the time of which your RDS clusters go up and down.
 
-This is comprised of two rules and two functions.
+The primary functionality is offered by two lambdas and two cron-based event rules.
 
   `enableDatabaseRule` -> `enableDatabaseFunction`
 
@@ -15,29 +15,11 @@ This is comprised of two rules and two functions.
 Both of these rules take a CronOptions object which describes when they will fire. Otherwise you can trigger these
 functions manually.
 
-The functions within trigger webhooks about various events:
-  `WEBHOOK_START` -> when a cluster is started.
-```
-  {
-    message,
-    cluster
-  }
-```
-  `WEBHOOK_START_STATUS` -> when an instance within a cluster becomes available. **This will make the lambda long-running**
-```
-  {
-   message,
-   cluster,
-   instance
-  }
-```
-  `WEBHOOK_TERMINATE` -> when a cluster is terminated.
-```
-  {
-    message,
-    cluster
-  }
-```
+`eventTopic` -> `eventSubscription` -> `eventFunction`
+
+When providing a webhook property it will also add a RDS-Event Subscription which will
+trigger webhook messages about the cluster being requested to start, instances going up and when the
+cluster is requested to go down.
 
 #### Initializers <a name="Initializers" id="rds-database-scheduler.RdsDatabaseScheduler.Initializer"></a>
 
@@ -137,6 +119,9 @@ Any object.
 | <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.enableDatabaseFunction">enableDatabaseFunction</a></code> | <code>aws-cdk-lib.aws_lambda_nodejs.NodejsFunction</code> | *No description.* |
 | <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.terminateDatabaseFunction">terminateDatabaseFunction</a></code> | <code>aws-cdk-lib.aws_lambda_nodejs.NodejsFunction</code> | *No description.* |
 | <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.enableDatabaseRule">enableDatabaseRule</a></code> | <code>aws-cdk-lib.aws_events.Rule</code> | *No description.* |
+| <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.eventFunction">eventFunction</a></code> | <code>aws-cdk-lib.aws_lambda_nodejs.NodejsFunction</code> | *No description.* |
+| <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.eventSubscription">eventSubscription</a></code> | <code>aws-cdk-lib.aws_rds.CfnEventSubscription</code> | *No description.* |
+| <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.eventTopic">eventTopic</a></code> | <code>aws-cdk-lib.aws_sns.Topic</code> | *No description.* |
 | <code><a href="#rds-database-scheduler.RdsDatabaseScheduler.property.terminateDatabaseRule">terminateDatabaseRule</a></code> | <code>aws-cdk-lib.aws_events.Rule</code> | *No description.* |
 
 ---
@@ -183,6 +168,36 @@ public readonly enableDatabaseRule: Rule;
 
 ---
 
+##### `eventFunction`<sup>Optional</sup> <a name="eventFunction" id="rds-database-scheduler.RdsDatabaseScheduler.property.eventFunction"></a>
+
+```typescript
+public readonly eventFunction: NodejsFunction;
+```
+
+- *Type:* aws-cdk-lib.aws_lambda_nodejs.NodejsFunction
+
+---
+
+##### `eventSubscription`<sup>Optional</sup> <a name="eventSubscription" id="rds-database-scheduler.RdsDatabaseScheduler.property.eventSubscription"></a>
+
+```typescript
+public readonly eventSubscription: CfnEventSubscription;
+```
+
+- *Type:* aws-cdk-lib.aws_rds.CfnEventSubscription
+
+---
+
+##### `eventTopic`<sup>Optional</sup> <a name="eventTopic" id="rds-database-scheduler.RdsDatabaseScheduler.property.eventTopic"></a>
+
+```typescript
+public readonly eventTopic: Topic;
+```
+
+- *Type:* aws-cdk-lib.aws_sns.Topic
+
+---
+
 ##### `terminateDatabaseRule`<sup>Optional</sup> <a name="terminateDatabaseRule" id="rds-database-scheduler.RdsDatabaseScheduler.property.terminateDatabaseRule"></a>
 
 ```typescript
@@ -210,7 +225,7 @@ public readonly terminateDatabaseRule: Rule;
 | <code><a href="#rds-database-scheduler.IRdsDatabaseSchedulerProps.property.clusterIdentifier">clusterIdentifier</a></code> | <code>string</code> | Identifier from AWS that represents the cluster to be controlled. |
 | <code><a href="#rds-database-scheduler.IRdsDatabaseSchedulerProps.property.enableCron">enableCron</a></code> | <code>aws-cdk-lib.aws_events.CronOptions</code> | CronOptions that represent when the database will be brought up. |
 | <code><a href="#rds-database-scheduler.IRdsDatabaseSchedulerProps.property.terminateCron">terminateCron</a></code> | <code>aws-cdk-lib.aws_events.CronOptions</code> | CronOptions that represent when the database will be terminated. |
-| <code><a href="#rds-database-scheduler.IRdsDatabaseSchedulerProps.property.webhooks">webhooks</a></code> | <code><a href="#rds-database-scheduler.IWebhookOptions">IWebhookOptions</a></code> | A collection of webhooks that report status on database actions. |
+| <code><a href="#rds-database-scheduler.IRdsDatabaseSchedulerProps.property.webhook">webhook</a></code> | <code>string</code> | A collection of webhooks that report status on database actions. |
 
 ---
 
@@ -250,68 +265,15 @@ CronOptions that represent when the database will be terminated.
 
 ---
 
-##### `webhooks`<sup>Optional</sup> <a name="webhooks" id="rds-database-scheduler.IRdsDatabaseSchedulerProps.property.webhooks"></a>
+##### `webhook`<sup>Optional</sup> <a name="webhook" id="rds-database-scheduler.IRdsDatabaseSchedulerProps.property.webhook"></a>
 
 ```typescript
-public readonly webhooks: IWebhookOptions;
+public readonly webhook: string;
 ```
 
-- *Type:* <a href="#rds-database-scheduler.IWebhookOptions">IWebhookOptions</a>
+- *Type:* string
 
 A collection of webhooks that report status on database actions.
-
----
-
-### IWebhookOptions <a name="IWebhookOptions" id="rds-database-scheduler.IWebhookOptions"></a>
-
-- *Implemented By:* <a href="#rds-database-scheduler.IWebhookOptions">IWebhookOptions</a>
-
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#rds-database-scheduler.IWebhookOptions.property.start">start</a></code> | <code>string</code> | Reports when the database is going up. |
-| <code><a href="#rds-database-scheduler.IWebhookOptions.property.startStatus">startStatus</a></code> | <code>string</code> | Reports when the database instances go up. |
-| <code><a href="#rds-database-scheduler.IWebhookOptions.property.terminate">terminate</a></code> | <code>string</code> | Reports when the database is going down. |
-
----
-
-##### `start`<sup>Optional</sup> <a name="start" id="rds-database-scheduler.IWebhookOptions.property.start"></a>
-
-```typescript
-public readonly start: string;
-```
-
-- *Type:* string
-
-Reports when the database is going up.
-
----
-
-##### `startStatus`<sup>Optional</sup> <a name="startStatus" id="rds-database-scheduler.IWebhookOptions.property.startStatus"></a>
-
-```typescript
-public readonly startStatus: string;
-```
-
-- *Type:* string
-
-Reports when the database instances go up.
-
-Will make the lambda long-running.
-
----
-
-##### `terminate`<sup>Optional</sup> <a name="terminate" id="rds-database-scheduler.IWebhookOptions.property.terminate"></a>
-
-```typescript
-public readonly terminate: string;
-```
-
-- *Type:* string
-
-Reports when the database is going down.
 
 ---
 

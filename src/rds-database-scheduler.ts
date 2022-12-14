@@ -28,7 +28,7 @@ const isStack = (c: Construct): c is Stack => {
 
 /**
  * Provides an easy way to schedule the time of which your RDS clusters go up and down.
- * This is comprised of two rules and two functions.
+ * The primary functionality is offered by two lambdas and two cron-based event rules.
  *
  *  `enableDatabaseRule` -> `enableDatabaseFunction`
  *
@@ -36,6 +36,12 @@ const isStack = (c: Construct): c is Stack => {
  *
  * Both of these rules take a CronOptions object which describes when they will fire. Otherwise you can trigger these
  * functions manually.
+ *
+ * `eventTopic` -> `eventSubscription` -> `eventFunction`
+ *
+ * When providing a webhook property it will also add a RDS-Event Subscription which will
+ * trigger webhook messages about the cluster being requested to start, instances going up and when the
+ * cluster is requested to go down.
  */
 export class RdsDatabaseScheduler extends Construct {
   enableDatabaseRule?: Rule;
@@ -65,7 +71,6 @@ export class RdsDatabaseScheduler extends Construct {
       entry: join(__dirname, 'lambdas/enable-database/index.js'),
       runtime: Runtime.NODEJS_14_X,
       environment,
-      timeout: Duration.minutes(15),
       initialPolicy: [
         new PolicyStatement({
           actions: [
@@ -76,16 +81,6 @@ export class RdsDatabaseScheduler extends Construct {
           ],
           effect: Effect.ALLOW,
         }),
-        new PolicyStatement({
-          actions: [
-            'rds:DescribeDBInstances',
-            'rds:DescribeDBClusters',
-          ],
-          resources: [
-            '*',
-          ],
-          effect: Effect.ALLOW,
-        }),
       ],
     });
 
@@ -93,7 +88,6 @@ export class RdsDatabaseScheduler extends Construct {
       entry: join(__dirname, 'lambdas/terminate-database/index.js'),
       runtime: Runtime.NODEJS_14_X,
       environment,
-      timeout: Duration.minutes(15),
       initialPolicy: [
         new PolicyStatement({
           actions: [
@@ -101,16 +95,6 @@ export class RdsDatabaseScheduler extends Construct {
           ],
           resources: [
             databaseArn,
-          ],
-          effect: Effect.ALLOW,
-        }),
-        new PolicyStatement({
-          actions: [
-            'rds:DescribeDBInstances',
-            'rds:DescribeDBClusters',
-          ],
-          resources: [
-            '*',
           ],
           effect: Effect.ALLOW,
         }),
