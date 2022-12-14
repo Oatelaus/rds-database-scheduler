@@ -4,17 +4,12 @@ import { CronOptions, Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { SnsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { CfnEventSubscription } from 'aws-cdk-lib/aws-rds';
+import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 
-export interface IWebhookOptions {
-  /** Reports when the database is going up. */
-  start?: string;
-  /** Reports when the database instances go up. Will make the lambda long-running. */
-  startStatus?: string;
-  /** Reports when the database is going down. */
-  terminate?: string;
-}
 
 export interface IRdsDatabaseSchedulerProps {
   /** Identifier from AWS that represents the cluster to be controlled. */
@@ -24,7 +19,7 @@ export interface IRdsDatabaseSchedulerProps {
   /** CronOptions that represent when the database will be terminated. */
   terminateCron?: CronOptions;
   /** A collection of webhooks that report status on database actions. */
-  webhooks?: IWebhookOptions;
+  webhook?: string;
 }
 
 const isStack = (c: Construct): c is Stack => {
@@ -41,45 +36,22 @@ const isStack = (c: Construct): c is Stack => {
  *
  * Both of these rules take a CronOptions object which describes when they will fire. Otherwise you can trigger these
  * functions manually.
- *
- * The functions within trigger webhooks about various events:
- *  `WEBHOOK_START` -> when a cluster is started.
- * ```
- *  {
- *    message,
- *    cluster
- *  }
- * ```
- *  `WEBHOOK_START_STATUS` -> when an instance within a cluster becomes available. **This will make the lambda long-running**
- * ```
- *  {
- *   message,
- *   cluster,
- *   instance
- *  }
- * ```
- *  `WEBHOOK_TERMINATE` -> when a cluster is terminated.
- * ```
- *  {
- *    message,
- *    cluster
- *  }
- * ```
  */
 export class RdsDatabaseScheduler extends Construct {
   enableDatabaseRule?: Rule;
   enableDatabaseFunction: NodejsFunction;
   terminateDatabaseRule?: Rule;
   terminateDatabaseFunction: NodejsFunction;
+  eventTopic?: Topic;
+  eventSubscription?: CfnEventSubscription;
+  eventFunction?: NodejsFunction;
 
   constructor(scope: Construct, id: string, props: IRdsDatabaseSchedulerProps) {
     super(scope, id);
 
     const environment = {
       CLUSTER_IDENTIFIER: props.clusterIdentifier,
-      WEBHOOK_START: props.webhooks?.start || '',
-      WEBHOOK_START_STATUS: props.webhooks?.startStatus || '',
-      WEBHOOK_TERMINATE: props.webhooks?.terminate || '',
+      WEBHOOK: props.webhook || '',
     };
 
     const databaseArn = Arn.format({
@@ -87,7 +59,7 @@ export class RdsDatabaseScheduler extends Construct {
       resource: 'cluster',
       resourceName: props.clusterIdentifier,
       arnFormat: ArnFormat.COLON_RESOURCE_NAME,
-    }, isStack(scope) ? scope : undefined);
+    }, isStack(scope) ? scope : Stack.of(scope));
 
     this.enableDatabaseFunction = new NodejsFunction(this, `${id}-enable-database-function`, {
       entry: join(__dirname, 'lambdas/enable-database/index.js'),
@@ -144,6 +116,41 @@ export class RdsDatabaseScheduler extends Construct {
         }),
       ],
     });
+
+    if (props.webhook) {
+      this.eventTopic = new Topic(this, `${id}-rds-event-topic`, {
+        displayName: `${id} RDS Event Topic`,
+      });
+
+      this.eventFunction = new NodejsFunction(this, `${id}-event-function`, {
+        entry: join(__dirname, 'lambdas/event/index.js'),
+        runtime: Runtime.NODEJS_14_X,
+        environment,
+        timeout: Duration.minutes(15),
+        initialPolicy: [
+          new PolicyStatement({
+            actions: [
+              'rds:DescribeDBInstances',
+              'rds:DescribeDBClusters',
+            ],
+            resources: [
+              '*',
+            ],
+            effect: Effect.ALLOW,
+          }),
+        ],
+        events: [
+          new SnsEventSource(this.eventTopic),
+        ],
+      });
+
+      this.eventSubscription = new CfnEventSubscription(this, `${id}-rds-event-subscription`, {
+        enabled: true,
+        snsTopicArn: this.eventTopic.topicArn,
+        sourceType: 'db-instance',
+        eventCategories: ['notification'],
+      });
+    }
 
     if (props.enableCron) {
       this.enableDatabaseRule = new Rule(this, `${id}-enable-database-rule`, {

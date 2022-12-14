@@ -62,10 +62,12 @@
     "constructs": "^10.1.121"
   },
   "dependencies": {
-    "@aws-sdk/client-rds": "^3.223.0"
+    "@aws-sdk/client-rds": "^3.223.0",
+    "@types/aws-lambda": "^8.10.109"
   },
   "bundledDependencies": [
-    "@aws-sdk/client-rds"
+    "@aws-sdk/client-rds",
+    "@types/aws-lambda"
   ],
   "keywords": [
     "cdk"
