@@ -6,7 +6,7 @@ import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { SnsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { CfnEventSubscription } from 'aws-cdk-lib/aws-rds';
+import { CfnEventSubscription, DatabaseCluster } from 'aws-cdk-lib/aws-rds';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 
@@ -128,11 +128,16 @@ export class RdsDatabaseScheduler extends Construct {
         ],
       });
 
+      const cluster = DatabaseCluster.fromDatabaseClusterAttributes(this, 'database-cluster', {
+        clusterIdentifier: props.clusterIdentifier,
+      });
+
       this.eventSubscription = new CfnEventSubscription(this, `${id}-rds-event-subscription`, {
         enabled: true,
         snsTopicArn: this.eventTopic.topicArn,
         sourceType: 'db-instance',
         eventCategories: ['notification'],
+        sourceIds: cluster.instanceIdentifiers,
       });
     }
 
