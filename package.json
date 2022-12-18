@@ -70,7 +70,11 @@
     "@types/aws-lambda"
   ],
   "keywords": [
-    "cdk"
+    "aws",
+    "cdk",
+    "construct",
+    "rds",
+    "schedule"
   ],
   "main": "lib/index.js",
   "license": "Apache-2.0",

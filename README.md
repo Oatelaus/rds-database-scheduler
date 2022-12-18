@@ -1,8 +1,49 @@
 # rds-database-scheduler
 
-Provides an easy way to schedule your RDS clusters to go up and down.
+A CDK Construct that scaffolds a basic scheduling concepts that bring your database up and down based on cron scheduling.
 
-## Example
+Common usecases of this tool would be keeping your development databases down out of hours or even for longer than 7 days.
+
+Something to note when using this is that database instances can take some time to go up and you should accomodate for this when setting up schedules.
+
+The `webhook` property provides a way to get updates about your database instances as they become available.
+
+
+## Webhook Body
+
+```ts
+{
+    message: "Thing happened"
+}
+```
+
+## Examples
+
+
+### Keep your development database up between 8:45AM and 7:15PM.
+
+```ts
+new RdsDatabaseScheduler(this, 'database-scheduler', {
+    clusterIdentifier: `db-oatelaus`,
+    enableCron: {
+        minute: '45',
+        hour: '8',
+        weekDay: '*',
+        month: '*',
+        year: '*'
+    },
+    terminateCron: {
+        minute: '15',
+        hour: '19',
+        weekDay: '*',
+        month: '*',
+        year: '*'
+    },
+    webhook: 'https://hooks.slack.com/workflows/webhook-url'
+})
+```
+
+### Keep your development database up between 8:45AM and 7:15PM.
 
 ```ts
 new RdsDatabaseScheduler(this, 'database-scheduler', {
