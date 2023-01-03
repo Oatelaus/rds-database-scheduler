@@ -37,7 +37,7 @@ export async function handler(event: SNSEvent) {
     return;
   }
 
-  await waitForDatabase();
+  await waitForDatabase(instanceIdentifier);
 
   await post(WEBHOOK, {
     message: `Instance ${rdsEventMessage['Source ID']} of cluster ${CLUSTER_IDENTIFIER} is available`,
