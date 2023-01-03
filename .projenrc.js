@@ -11,5 +11,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
   repositoryUrl: 'https://github.com/Oatelaus/rds-database-scheduler.git',
   bundledDeps: ['@aws-sdk/client-rds', '@types/aws-lambda'],
   keywords: ['aws', 'cdk', 'rds', 'construct', 'schedule'],
+  prettier: true,
+  prettierOptions: {
+    settings: {
+      singleQuote: true,
+    },
+  },
 });
 project.synth();

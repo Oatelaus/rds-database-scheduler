@@ -10,7 +10,6 @@ import { CfnEventSubscription, DatabaseCluster } from 'aws-cdk-lib/aws-rds';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 
-
 export interface IRdsDatabaseSchedulerProps {
   /** Identifier from AWS that represents the cluster to be controlled. */
   clusterIdentifier: string;
@@ -60,46 +59,49 @@ export class RdsDatabaseScheduler extends Construct {
       WEBHOOK: props.webhook || '',
     };
 
-    const databaseArn = Arn.format({
-      service: 'rds',
-      resource: 'cluster',
-      resourceName: props.clusterIdentifier,
-      arnFormat: ArnFormat.COLON_RESOURCE_NAME,
-    }, isStack(scope) ? scope : Stack.of(scope));
+    const databaseArn = Arn.format(
+      {
+        service: 'rds',
+        resource: 'cluster',
+        resourceName: props.clusterIdentifier,
+        arnFormat: ArnFormat.COLON_RESOURCE_NAME,
+      },
+      isStack(scope) ? scope : Stack.of(scope)
+    );
 
-    this.enableDatabaseFunction = new NodejsFunction(this, `${id}-enable-database-function`, {
-      entry: join(__dirname, 'lambdas/enable-database/index.js'),
-      runtime: Runtime.NODEJS_14_X,
-      environment,
-      initialPolicy: [
-        new PolicyStatement({
-          actions: [
-            'rds:StartDBCluster',
-          ],
-          resources: [
-            databaseArn,
-          ],
-          effect: Effect.ALLOW,
-        }),
-      ],
-    });
+    this.enableDatabaseFunction = new NodejsFunction(
+      this,
+      `${id}-enable-database-function`,
+      {
+        entry: join(__dirname, 'lambdas/enable-database/index.js'),
+        runtime: Runtime.NODEJS_14_X,
+        environment,
+        initialPolicy: [
+          new PolicyStatement({
+            actions: ['rds:StartDBCluster'],
+            resources: [databaseArn],
+            effect: Effect.ALLOW,
+          }),
+        ],
+      }
+    );
 
-    this.terminateDatabaseFunction = new NodejsFunction(this, `${id}-terminate-database-function`, {
-      entry: join(__dirname, 'lambdas/terminate-database/index.js'),
-      runtime: Runtime.NODEJS_14_X,
-      environment,
-      initialPolicy: [
-        new PolicyStatement({
-          actions: [
-            'rds:StopDBCluster',
-          ],
-          resources: [
-            databaseArn,
-          ],
-          effect: Effect.ALLOW,
-        }),
-      ],
-    });
+    this.terminateDatabaseFunction = new NodejsFunction(
+      this,
+      `${id}-terminate-database-function`,
+      {
+        entry: join(__dirname, 'lambdas/terminate-database/index.js'),
+        runtime: Runtime.NODEJS_14_X,
+        environment,
+        initialPolicy: [
+          new PolicyStatement({
+            actions: ['rds:StopDBCluster'],
+            resources: [databaseArn],
+            effect: Effect.ALLOW,
+          }),
+        ],
+      }
+    );
 
     if (props.webhook) {
       this.eventTopic = new Topic(this, `${id}-rds-event-topic`, {
@@ -113,32 +115,24 @@ export class RdsDatabaseScheduler extends Construct {
         timeout: Duration.minutes(15),
         initialPolicy: [
           new PolicyStatement({
-            actions: [
-              'rds:DescribeDBInstances',
-              'rds:DescribeDBClusters',
-            ],
-            resources: [
-              '*',
-            ],
+            actions: ['rds:DescribeDBInstances', 'rds:DescribeDBClusters'],
+            resources: ['*'],
             effect: Effect.ALLOW,
           }),
         ],
-        events: [
-          new SnsEventSource(this.eventTopic),
-        ],
+        events: [new SnsEventSource(this.eventTopic)],
       });
 
-      const cluster = DatabaseCluster.fromDatabaseClusterAttributes(this, 'database-cluster', {
-        clusterIdentifier: props.clusterIdentifier,
-      });
-
-      this.eventSubscription = new CfnEventSubscription(this, `${id}-rds-event-subscription`, {
-        enabled: true,
-        snsTopicArn: this.eventTopic.topicArn,
-        sourceType: 'db-instance',
-        eventCategories: ['notification'],
-        sourceIds: cluster.instanceIdentifiers,
-      });
+      this.eventSubscription = new CfnEventSubscription(
+        this,
+        `${id}-rds-event-subscription`,
+        {
+          enabled: true,
+          snsTopicArn: this.eventTopic.topicArn,
+          sourceType: 'db-instance',
+          eventCategories: ['notification'],
+        }
+      );
     }
 
     if (props.enableCron) {
@@ -146,15 +140,23 @@ export class RdsDatabaseScheduler extends Construct {
         schedule: Schedule.cron(props.enableCron),
       });
 
-      this.enableDatabaseRule.addTarget(new LambdaFunction(this.enableDatabaseFunction));
+      this.enableDatabaseRule.addTarget(
+        new LambdaFunction(this.enableDatabaseFunction)
+      );
     }
 
     if (props.terminateCron) {
-      this.terminateDatabaseRule = new Rule(this, `${id}-terminate-database-rule`, {
-        schedule: Schedule.cron(props.terminateCron),
-      });
+      this.terminateDatabaseRule = new Rule(
+        this,
+        `${id}-terminate-database-rule`,
+        {
+          schedule: Schedule.cron(props.terminateCron),
+        }
+      );
 
-      this.terminateDatabaseRule.addTarget(new LambdaFunction(this.terminateDatabaseFunction));
+      this.terminateDatabaseRule.addTarget(
+        new LambdaFunction(this.terminateDatabaseFunction)
+      );
     }
   }
 }

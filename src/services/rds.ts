@@ -1,4 +1,11 @@
-import { DescribeDBClustersCommand, DescribeDBInstancesCommand, RDSClient, StartDBClusterCommand, StopDBClusterCommand, waitUntilDBInstanceAvailable } from '@aws-sdk/client-rds';
+import {
+  DescribeDBClustersCommand,
+  DescribeDBInstancesCommand,
+  RDSClient,
+  StartDBClusterCommand,
+  StopDBClusterCommand,
+  waitUntilDBInstanceAvailable,
+} from '@aws-sdk/client-rds';
 
 const client = new RDSClient({});
 
@@ -48,11 +55,14 @@ export async function getDbInstances(identifier: string) {
 }
 
 export async function waitForDatabase(identifier: string) {
-  return waitUntilDBInstanceAvailable({
-    client,
-    // Wait a maximum of 15 minutes (should outlive the lambda)
-    maxWaitTime: 60 * 15,
-  }, {
-    DBInstanceIdentifier: identifier,
-  });
+  return waitUntilDBInstanceAvailable(
+    {
+      client,
+      // Wait a maximum of 15 minutes (should outlive the lambda)
+      maxWaitTime: 60 * 15,
+    },
+    {
+      DBInstanceIdentifier: identifier,
+    }
+  );
 }
