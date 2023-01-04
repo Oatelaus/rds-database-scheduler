@@ -12,7 +12,7 @@ The `webhook` property provides a way to get updates about your database instanc
 
 ```ts
 {
-  message: "Thing happened";
+  message: 'Thing happened';
 }
 ```
 
@@ -21,43 +21,62 @@ The `webhook` property provides a way to get updates about your database instanc
 ### Keep your development database up between 8:45AM and 7:15PM.
 
 ```ts
-new RdsDatabaseScheduler(this, "database-scheduler", {
+new RdsDatabaseScheduler(this, 'database-scheduler', {
   clusterIdentifier: `db-oatelaus`,
-  enableCron: {
-    minute: "45",
-    hour: "8",
-    weekDay: "*",
-    month: "*",
-    year: "*",
-  },
-  terminateCron: {
-    minute: "15",
-    hour: "19",
-    weekDay: "*",
-    month: "*",
-    year: "*",
-  },
+  cronSchedules: [
+    {
+      id: 'daily-enable',
+      type: RDSCronType.enable,
+      schedule: {
+        minute: '45',
+        hour: '8',
+        weekDay: '*',
+        month: '*',
+        year: '*',
+      },
+    },
+    {
+      id: 'daily-terminate',
+      type: RDSCronType.terminate,
+      schedule: {
+        minute: '15',
+        hour: '19',
+        weekDay: '*',
+        month: '*',
+        year: '*',
+      },
+    },
+  ],
 });
 ```
 
 ### Bringing your database up for maintenance hours (4:30/5AM -> 6/6:30AM)
 
 ```ts
-new RdsDatabaseScheduler(this, "database-scheduler", {
+new RdsDatabaseScheduler(this, 'database-scheduler', {
   clusterIdentifier: `db-oatelaus`,
-  enableCron: {
-    minute: "30",
-    hour: "4",
-    month: "*",
-    year: "*",
-    weekDay: "SUN",
-  },
-  terminateCron: {
-    minute: "30",
-    hour: "6",
-    month: "*",
-    year: "*",
-    weekDay: "SUN",
-  },
+  cronSchedules: [
+    {
+      id: 'maintenance-enable',
+      type: RDSCronType.enable,
+      schedule: {
+        minute: '30',
+        hour: '4',
+        month: '*',
+        year: '*',
+        weekDay: 'SUN',
+      },
+    },
+    {
+      id: 'maintance-terminate',
+      type: RDSCronType.terminate,
+      schedule: {
+        minute: '30',
+        hour: '6',
+        month: '*',
+        year: '*',
+        weekDay: 'SUN',
+      },
+  ]
 });
 ```

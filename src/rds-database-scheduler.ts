@@ -10,13 +10,25 @@ import { CfnEventSubscription } from 'aws-cdk-lib/aws-rds';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { Construct } from 'constructs';
 
+export enum RDSCronType {
+  ENABLE = 'enable',
+  TERMINATE = 'terminate',
+}
+
+export interface IRdsCronSchedule {
+  /** Action name, used to unsure unique IDs for each rule. */
+  id: string;
+  /** Whether to enable or terminate the database. */
+  type: RDSCronType;
+  /** The schedule to carry out the this task. */
+  schedule: CronOptions;
+}
+
 export interface IRdsDatabaseSchedulerProps {
   /** Identifier from AWS that represents the cluster to be controlled. */
   clusterIdentifier: string;
-  /** CronOptions that represent when the database will be brought up. */
-  enableCron?: CronOptions;
-  /** CronOptions that represent when the database will be terminated. */
-  terminateCron?: CronOptions;
+  /** A list of schedules as to when to enable/terminate crons. */
+  cronSchedules: IRdsCronSchedule[];
   /** A collection of webhooks that report status on database actions. */
   webhook?: string;
 }
@@ -43,9 +55,7 @@ const isStack = (c: Construct): c is Stack => {
  * cluster is requested to go down.
  */
 export class RdsDatabaseScheduler extends Construct {
-  enableDatabaseRule?: Rule;
   enableDatabaseFunction: NodejsFunction;
-  terminateDatabaseRule?: Rule;
   terminateDatabaseFunction: NodejsFunction;
   eventTopic?: Topic;
   eventSubscription?: CfnEventSubscription;
@@ -135,28 +145,22 @@ export class RdsDatabaseScheduler extends Construct {
       );
     }
 
-    if (props.enableCron) {
-      this.enableDatabaseRule = new Rule(this, `${id}-enable-database-rule`, {
-        schedule: Schedule.cron(props.enableCron),
-      });
-
-      this.enableDatabaseRule.addTarget(
-        new LambdaFunction(this.enableDatabaseFunction)
-      );
-    }
-
-    if (props.terminateCron) {
-      this.terminateDatabaseRule = new Rule(
+    props.cronSchedules.map((cronSchedule) => {
+      const cronRule = new Rule(
         this,
-        `${id}-terminate-database-rule`,
+        `${cronSchedule.id}-${cronSchedule.type}-database-rule`,
         {
-          schedule: Schedule.cron(props.terminateCron),
+          schedule: Schedule.cron(cronSchedule.schedule),
         }
       );
 
-      this.terminateDatabaseRule.addTarget(
-        new LambdaFunction(this.terminateDatabaseFunction)
+      cronRule.addTarget(
+        new LambdaFunction(
+          cronSchedule.type === RDSCronType.ENABLE
+            ? this.enableDatabaseFunction
+            : this.terminateDatabaseFunction
+        )
       );
-    }
+    });
   }
 }

@@ -118,11 +118,9 @@ Any object.
 | <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.enableDatabaseFunction">enableDatabaseFunction</a></code> | <code>aws-cdk-lib.aws_lambda_nodejs.NodejsFunction</code> | *No description.* |
 | <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.terminateDatabaseFunction">terminateDatabaseFunction</a></code> | <code>aws-cdk-lib.aws_lambda_nodejs.NodejsFunction</code> | *No description.* |
-| <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.enableDatabaseRule">enableDatabaseRule</a></code> | <code>aws-cdk-lib.aws_events.Rule</code> | *No description.* |
 | <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.eventFunction">eventFunction</a></code> | <code>aws-cdk-lib.aws_lambda_nodejs.NodejsFunction</code> | *No description.* |
 | <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.eventSubscription">eventSubscription</a></code> | <code>aws-cdk-lib.aws_rds.CfnEventSubscription</code> | *No description.* |
 | <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.eventTopic">eventTopic</a></code> | <code>aws-cdk-lib.aws_sns.Topic</code> | *No description.* |
-| <code><a href="#@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.terminateDatabaseRule">terminateDatabaseRule</a></code> | <code>aws-cdk-lib.aws_events.Rule</code> | *No description.* |
 
 ---
 
@@ -158,16 +156,6 @@ public readonly terminateDatabaseFunction: NodejsFunction;
 
 ---
 
-##### `enableDatabaseRule`<sup>Optional</sup> <a name="enableDatabaseRule" id="@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.enableDatabaseRule"></a>
-
-```typescript
-public readonly enableDatabaseRule: Rule;
-```
-
-- *Type:* aws-cdk-lib.aws_events.Rule
-
----
-
 ##### `eventFunction`<sup>Optional</sup> <a name="eventFunction" id="@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.eventFunction"></a>
 
 ```typescript
@@ -198,20 +186,61 @@ public readonly eventTopic: Topic;
 
 ---
 
-##### `terminateDatabaseRule`<sup>Optional</sup> <a name="terminateDatabaseRule" id="@oatelaus/rds-database-scheduler.RdsDatabaseScheduler.property.terminateDatabaseRule"></a>
-
-```typescript
-public readonly terminateDatabaseRule: Rule;
-```
-
-- *Type:* aws-cdk-lib.aws_events.Rule
-
----
-
 
 
 
 ## Protocols <a name="Protocols" id="Protocols"></a>
+
+### IRdsCronSchedule <a name="IRdsCronSchedule" id="@oatelaus/rds-database-scheduler.IRdsCronSchedule"></a>
+
+- *Implemented By:* <a href="#@oatelaus/rds-database-scheduler.IRdsCronSchedule">IRdsCronSchedule</a>
+
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#@oatelaus/rds-database-scheduler.IRdsCronSchedule.property.id">id</a></code> | <code>string</code> | Action name, used to unsure unique IDs for each rule. |
+| <code><a href="#@oatelaus/rds-database-scheduler.IRdsCronSchedule.property.schedule">schedule</a></code> | <code>aws-cdk-lib.aws_events.CronOptions</code> | The schedule to carry out the this task. |
+| <code><a href="#@oatelaus/rds-database-scheduler.IRdsCronSchedule.property.type">type</a></code> | <code><a href="#@oatelaus/rds-database-scheduler.RDSCronType">RDSCronType</a></code> | Whether to enable or terminate the database. |
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="@oatelaus/rds-database-scheduler.IRdsCronSchedule.property.id"></a>
+
+```typescript
+public readonly id: string;
+```
+
+- *Type:* string
+
+Action name, used to unsure unique IDs for each rule.
+
+---
+
+##### `schedule`<sup>Required</sup> <a name="schedule" id="@oatelaus/rds-database-scheduler.IRdsCronSchedule.property.schedule"></a>
+
+```typescript
+public readonly schedule: CronOptions;
+```
+
+- *Type:* aws-cdk-lib.aws_events.CronOptions
+
+The schedule to carry out the this task.
+
+---
+
+##### `type`<sup>Required</sup> <a name="type" id="@oatelaus/rds-database-scheduler.IRdsCronSchedule.property.type"></a>
+
+```typescript
+public readonly type: RDSCronType;
+```
+
+- *Type:* <a href="#@oatelaus/rds-database-scheduler.RDSCronType">RDSCronType</a>
+
+Whether to enable or terminate the database.
+
+---
 
 ### IRdsDatabaseSchedulerProps <a name="IRdsDatabaseSchedulerProps" id="@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps"></a>
 
@@ -223,8 +252,7 @@ public readonly terminateDatabaseRule: Rule;
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.clusterIdentifier">clusterIdentifier</a></code> | <code>string</code> | Identifier from AWS that represents the cluster to be controlled. |
-| <code><a href="#@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.enableCron">enableCron</a></code> | <code>aws-cdk-lib.aws_events.CronOptions</code> | CronOptions that represent when the database will be brought up. |
-| <code><a href="#@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.terminateCron">terminateCron</a></code> | <code>aws-cdk-lib.aws_events.CronOptions</code> | CronOptions that represent when the database will be terminated. |
+| <code><a href="#@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.cronSchedules">cronSchedules</a></code> | <code><a href="#@oatelaus/rds-database-scheduler.IRdsCronSchedule">IRdsCronSchedule</a>[]</code> | A list of schedules as to when to enable/terminate crons. |
 | <code><a href="#@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.webhook">webhook</a></code> | <code>string</code> | A collection of webhooks that report status on database actions. |
 
 ---
@@ -241,27 +269,15 @@ Identifier from AWS that represents the cluster to be controlled.
 
 ---
 
-##### `enableCron`<sup>Optional</sup> <a name="enableCron" id="@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.enableCron"></a>
+##### `cronSchedules`<sup>Required</sup> <a name="cronSchedules" id="@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.cronSchedules"></a>
 
 ```typescript
-public readonly enableCron: CronOptions;
+public readonly cronSchedules: IRdsCronSchedule[];
 ```
 
-- *Type:* aws-cdk-lib.aws_events.CronOptions
+- *Type:* <a href="#@oatelaus/rds-database-scheduler.IRdsCronSchedule">IRdsCronSchedule</a>[]
 
-CronOptions that represent when the database will be brought up.
-
----
-
-##### `terminateCron`<sup>Optional</sup> <a name="terminateCron" id="@oatelaus/rds-database-scheduler.IRdsDatabaseSchedulerProps.property.terminateCron"></a>
-
-```typescript
-public readonly terminateCron: CronOptions;
-```
-
-- *Type:* aws-cdk-lib.aws_events.CronOptions
-
-CronOptions that represent when the database will be terminated.
+A list of schedules as to when to enable/terminate crons.
 
 ---
 
@@ -274,6 +290,28 @@ public readonly webhook: string;
 - *Type:* string
 
 A collection of webhooks that report status on database actions.
+
+---
+
+## Enums <a name="Enums" id="Enums"></a>
+
+### RDSCronType <a name="RDSCronType" id="@oatelaus/rds-database-scheduler.RDSCronType"></a>
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#@oatelaus/rds-database-scheduler.RDSCronType.ENABLE">ENABLE</a></code> | *No description.* |
+| <code><a href="#@oatelaus/rds-database-scheduler.RDSCronType.TERMINATE">TERMINATE</a></code> | *No description.* |
+
+---
+
+##### `ENABLE` <a name="ENABLE" id="@oatelaus/rds-database-scheduler.RDSCronType.ENABLE"></a>
+
+---
+
+
+##### `TERMINATE` <a name="TERMINATE" id="@oatelaus/rds-database-scheduler.RDSCronType.TERMINATE"></a>
 
 ---
 
